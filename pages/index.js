@@ -1,14 +1,29 @@
-import { getFeaturedEvents } from '../dummy-data';
-import EventList from '../components/events/event-list';
+import Head from "next/head";
 
-function HomePage() {
-  const featuredEvents = getFeaturedEvents();
+import { getFeaturedEvents } from "../helpers/api-util";
+import EventList from "../components/events/event-list";
 
+function HomePage(props) {
   return (
     <div>
-      <EventList items={featuredEvents} />
+      <Head>
+        <title>NextJS Events</title>
+        <meta name="descripiton" content="a lot of..." />
+      </Head>
+      <EventList items={props.events} />
     </div>
   );
+}
+
+export async function getStaticProps() {
+  const featuredEvents = await getFeaturedEvents();
+
+  return {
+    props: {
+      events: featuredEvents,
+    },
+    revalidate: 1800,
+  };
 }
 
 export default HomePage;
