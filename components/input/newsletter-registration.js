@@ -1,8 +1,52 @@
-import classes from './newsletter-registration.module.css';
+import { useRef, useContext } from "react";
+import classes from "./newsletter-registration.module.css";
+import NotificationContext from "../../store/notification-context";
 
 function NewsletterRegistration() {
+  const emailInputRef = useRef();
+  const notificationCtx = useContext(NotificationContext);
+
   function registrationHandler(event) {
+    const enteredEmail = emailInputRef.current.value;
+
     event.preventDefault();
+
+    notificationCtx.showNotification({
+      title: "Signing Up",
+      message: "Registering for newsletter",
+      status: "pending",
+    });
+
+    fetch("/api/newsletter", {
+      method: "POST",
+      body: JSON.stringify({ email: enteredEmail }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+
+        response.json().then((data) => {
+          throw new Error(data.message || "Something went wrong!");
+        });
+      })
+      .then((data) => {
+        notificationCtx.showNotification({
+          title: "Success!",
+          message: "Sign Up Successful",
+          status: "success",
+        });
+      })
+      .catch((error) => {
+        notificationCtx.showNotification({
+          title: "Error",
+          message: error.message || "Something went Wrong!",
+          status: "error",
+        });
+      });
 
     // fetch user input (state or refs)
     // optional: validate input
@@ -15,10 +59,11 @@ function NewsletterRegistration() {
       <form onSubmit={registrationHandler}>
         <div className={classes.control}>
           <input
-            type='email'
-            id='email'
-            placeholder='Your email'
-            aria-label='Your email'
+            type="email"
+            id="email"
+            placeholder="Your email"
+            aria-label="Your email"
+            ref={emailInputRef}
           />
           <button>Register</button>
         </div>
